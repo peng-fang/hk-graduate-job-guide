@@ -87,6 +87,9 @@
     const paired = rows => [...by(rows,"order")].sort(([a],[b])=>a-b).map(([,rs])=>({
       name:label(rs[0].label), values:["内地","香港"].map(region=>rs.find(r=>r.region===region)?.value),
     }));
+    const aged35AndOver = paired(current).map(row=>({
+      ...row, values:row.values.map(value=>Number.isFinite(value) ? 100-value : value),
+    }));
     const palette = [purple,rose], regions = ["内地","香港"].map(label);
     const keys = legend(regions.map((name,i)=>[name,palette[i]]));
     const era = state.marketPeriod==="early"
@@ -105,10 +108,10 @@
           t("每行比较同一年龄段，左为内地、右为香港。沿用原表对齐分组，仅显示列出的年龄段，各列未重归一；两地就业统计定义有差异。",
             "Each row pairs the same age group: Mainland China on the left, Hong Kong on the right. The chart uses the original aligned groups and denominators. Employment definitions differ between the two markets."),
           {key:keys}),
-        figure("youth",t("各行业 35 岁以下就业占比","Workers under 35 by industry"),era,
-          c.bars(paired(current),{colors:palette,labels:regions,max:70,format:percent,label:t("两地各行业35岁以下就业占比","Share of workers under 35 by industry and market")}),
-          t("分母是各地各行业的就业人数。时点相差一年，行业为原项目合并分类。内地行业细分属于原项目估计，用于观察结构，不宜用于精确排名。",
-            "Shares use the workforce of each industry and market as the denominator. The snapshots are one year apart. The project aligned the industries and estimated the Mainland breakdown for broad comparisons."),
+        figure("industry-age",t("各行业 35 岁及以上就业占比","Workers aged 35 and over by industry"),era,
+          c.bars(aged35AndOver,{colors:palette,labels:regions,max:100,format:percent,label:t("两地各行业 35 岁及以上就业占比","Share of workers aged 35 and over by industry and market")}),
+          t("35 岁及以上占比为 100% 减去 35 岁以下占比，分母为各地各行业的就业人数。两地统计时点相差一年，行业沿用项目合并分类。内地细分数据为项目估计，适合观察结构。",
+            "The share aged 35 and over equals 100% minus the under-35 share. The denominator is each industry’s workforce in each market. The snapshots are one year apart. Industry groups are aligned, and Mainland breakdowns are estimated for broad comparisons."),
           {key:keys,control:`<div class="chip-row">${chip("marketPeriod","early",t("早期","Earlier"),state.marketPeriod==="early")}${chip("marketPeriod","latest",t("较新","More recent"),state.marketPeriod==="latest")}</div>`}))
       + next(0);
   }
@@ -396,8 +399,8 @@
     <section class="card source-card">
       <h3>${t("两地对照","Two markets")}</h3>
       <ul><li>${census("5rp/html/l0404.htm","内地 2010 年人口普查","Mainland China 2010 Census")} ·
-      ${census("6rp/html/B0402a.htm","内地 2020 年人口普查","Mainland China 2020 Census")}${t("。行业 35 岁以下占比沿用项目的对齐和估计，分类与时点见图注。",
-        ". The under-35 shares follow the project’s industry groupings and estimates. See the chart notes for reference years.")}</li>
+      ${census("6rp/html/B0402a.htm","内地 2020 年人口普查","Mainland China 2020 Census")}${t("。各行业 35 岁及以上占比由原项目的 35 岁以下占比取补数，沿用原有行业分类、时点和估计。",
+        ". Shares aged 35 and over are complements of the original under-35 shares. They use the original project’s industry groupings, reference years and estimates.")}</li>
       <li>${hk("210-06201","香港政府统计处劳动人口表","Hong Kong C&SD labour force table")}${t("提供劳动人口背景。两地行业、年龄定义及年份见整合 Excel 的「00_口径限制」。",
         " provides labour force context. See the consolidated workbook’s 00 methods sheet for definitions and reference years.")}</li></ul>
       <h3>${t("香港就业、失业与收入","Hong Kong employment, unemployment and earnings")}</h3>
